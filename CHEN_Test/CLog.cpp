@@ -73,6 +73,10 @@ bool CLog::CloseLog()
 
 bool CLog::TranceLog(const char* str, ...)
 {
+	if (m_bOpened == false)
+	{
+		return false;
+	}
 	va_list var;
 	va_start(var, str);
 	int nCount = _vscprintf(str, var);
