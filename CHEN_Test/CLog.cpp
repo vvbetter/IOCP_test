@@ -86,6 +86,10 @@ bool CLog::TranceLog(const char* str, ...)
 	{
 		vsprintf_s(pBuffer, nCount + 1, str, var);
 	}
+#ifdef _DEBUG
+	cout << pBuffer << endl;
+#endif // _DEBUG
+
 	INT writenLen = 0;
 	DWORD temp;
 	while (writenLen < nCount)

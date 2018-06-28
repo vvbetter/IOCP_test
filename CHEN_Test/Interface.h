@@ -2,6 +2,9 @@
 #include <WinSock2.h>
 #include <sstream>
 #include <string>
+#include <iostream>
+
+using namespace std;
 
 #define Log(log)  \
 	{	stringstream ss; \
@@ -20,9 +23,7 @@
 struct PerIocpData
 {
 	OVERLAPPED overlapped;
-	WSABUF wsabuf;
 	char buffer[IOCP_BUFFER_SIZE];
-	UINT io_operator;
 };
 
 interface IOCPHanlder
@@ -31,3 +32,20 @@ interface IOCPHanlder
 	virtual bool Callback(PerIocpData* pData) = 0;
 	virtual bool RegIOHandle() = 0;
 };
+
+struct CreateSocketData
+{
+	SOCKET			Socket;
+	USHORT			Port;
+	SOCKADDR_IN		Addr;
+	bool			RegState;
+};
+
+enum CreateSocketType
+{
+	CST_UDP_IOCP = 0x1,
+	CST_TCP_IOCP = 0x2,
+	CST_BIND = 0x4,
+};
+
+extern bool CreateSocket(CreateSocketType type, UINT localIP, USHORT port, CreateSocketData &csd);
