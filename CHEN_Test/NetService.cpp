@@ -69,6 +69,7 @@ bool NetService::RemoveSocket(SOCKET s)
 	{
 		if (it->Socket == s)
 		{
+			closesocket(s);
 			it = m_sockList.erase(it);
 			return true;
 		}
