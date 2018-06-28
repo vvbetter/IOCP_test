@@ -25,22 +25,18 @@ bool CreateSocket(CreateSocketType type, UINT localIP, USHORT port, CreateSocket
 	addr.sin_addr.S_un.S_addr = (localIP == 0 ? htonl(INADDR_ANY) : localIP);
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(port);
-	int addrSize = sizeof(addr);
-	if (type & CST_BIND)
+	int ret = bind(s, (SOCKADDR*)&addr, sizeof(SOCKADDR_IN));
+	if (ret == SOCKET_ERROR)
 	{
-		int ret = bind(s, (SOCKADDR*)&addr, sizeof(SOCKADDR_IN));
-		if (ret == SOCKET_ERROR)
-		{
-			closesocket(s);
-			Log("Bind Failed:error code=%d,ip = %s,port=%d" << WSAGetLastError());
-			return false;
-		}
-		if (localIP != 0 && addr.sin_addr.S_un.S_addr != localIP)
-		{
-			closesocket(s);
-			Log("绑定本机指定IP失败.");
-			return false;
-		}
+		closesocket(s);
+		Log("Bind Failed:error code=%d,ip = %s,port=%d" << WSAGetLastError());
+		return false;
+	}
+	if (localIP != 0 && addr.sin_addr.S_un.S_addr != localIP)
+	{
+		closesocket(s);
+		Log("绑定本机指定IP失败.");
+		return false;
 	}
 	csd.Port = ntohs(addr.sin_port);
 	csd.Addr = addr;

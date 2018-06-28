@@ -148,6 +148,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CLog.h" />
+    <ClInclude Include="CS_LockGuide.h" />
     <ClInclude Include="Interface.h" />
     <ClInclude Include="IOCPHelper.h" />
     <ClInclude Include="NetService.h" />
@@ -157,6 +158,7 @@
   <ItemGroup>
     <ClCompile Include="CHEN_Test.cpp" />
     <ClCompile Include="CLog.cpp" />
+    <ClCompile Include="CS_LockGuide.cpp" />
     <ClCompile Include="Global.cpp" />
     <ClCompile Include="IOCPHelper.cpp" />
     <ClCompile Include="NetService.cpp" />

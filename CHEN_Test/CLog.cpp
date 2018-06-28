@@ -97,8 +97,6 @@ bool CLog::TranceLog(const char* str, ...)
 		DWORD lastWriteLen = (nCount - writenLen) >= IOCP_BUFFER_SIZE ? IOCP_BUFFER_SIZE : (nCount - writenLen);
 		memset(pData->buffer, 0, IOCP_BUFFER_SIZE);
 		memcpy_s(pData->buffer , IOCP_BUFFER_SIZE, pBuffer + writenLen, lastWriteLen);
-		pData->wsabuf.buf = pData->buffer;
-		pData->wsabuf.len = IOCP_BUFFER_SIZE;
 		BOOL ret = WriteFile(m_fileHandle, pData->buffer, lastWriteLen, &temp, &pData->overlapped);
 		pData->overlapped.Offset += lastWriteLen;
 		if (!ret)

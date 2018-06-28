@@ -2,6 +2,7 @@
 #include "NetService.h"
 #include "IOCPHelper.h"
 #include "CLog.h"
+#include "CS_LockGuide.h"
 
 NetService::NetService()
 {
@@ -11,6 +12,7 @@ NetService::NetService()
 NetService::~NetService()
 {
 	WSACleanup();
+	DeleteCriticalSection(&m_cs);
 }
 
 const HANDLE NetService::GetHanle()
@@ -46,6 +48,7 @@ bool NetService::Init()
 		TRANSLOG("WSAStartup 初始化失败:%d", WSAGetLastError());
 		return false;
 	}
+	InitializeCriticalSection(&m_cs);
 	return true;
 }
 
@@ -57,8 +60,10 @@ SOCKET NetService::RegesterNewSocket(CreateSocketType type, ULONG localIP, USHOR
 		TRANSLOG("NetService Create New Socket Error");
 		return INVALID_SOCKET;
 	}
-	//TODO 多线程加锁
-	m_sockList.push_back(sData);
+	{
+		AUTO_LOCKER(m_cs);
+		m_sockList.push_back(sData);
+	}
 	RegIOHandle();
 	return sData.Socket;
 }
@@ -70,7 +75,10 @@ bool NetService::RemoveSocket(SOCKET s)
 		if (it->Socket == s)
 		{
 			closesocket(s);
-			it = m_sockList.erase(it);
+			{
+				AUTO_LOCKER(m_cs);
+				it = m_sockList.erase(it);
+			}
 			return true;
 		}
 	}

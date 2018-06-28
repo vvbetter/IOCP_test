@@ -1,6 +1,7 @@
 #pragma once
 #include "Interface.h"
 #include <list>
+#include <process.h>
 class NetService : public IOCPHanlder
 {
 public:
@@ -15,6 +16,7 @@ public:
 	SOCKET RegesterNewSocket(CreateSocketType type, ULONG localIP, USHORT port);
 	bool RemoveSocket(SOCKET s);
 private:
+	CRITICAL_SECTION m_cs;
 	list<CreateSocketData> m_sockList;	//创建完成的socket列表
 };
 
