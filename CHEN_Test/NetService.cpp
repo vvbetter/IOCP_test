@@ -3,6 +3,9 @@
 #include "IOCPHelper.h"
 #include "CLog.h"
 #include "CS_LockGuide.h"
+#include "proto_source/Game60_FishingMessage.pb.h"
+
+using namespace com::game::proto;
 
 NetService::NetService()
 {
@@ -82,5 +85,17 @@ bool NetService::RemoveSocket(SOCKET s)
 			return true;
 		}
 	}
+	return false;
+}
+struct NetIoData :public PerIocpData
+{
+	WSABUF wsabuf;
+	UINT operatro;
+};
+
+bool NetService::CheckUid(INT64 uid)
+{
+	ReqEnterFishServerMessage msg;
+	msg.set_playeronlyid(uid);
 	return false;
 }
