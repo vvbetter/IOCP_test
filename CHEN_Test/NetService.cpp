@@ -36,6 +36,52 @@ const HANDLE NetService::GetHanle()
 
 bool NetService::Callback(PerIocpData * pData)
 {
+	NetIoData* pNetData = (NetIoData*)pData;
+	USHORT opt_h = pNetData->OPT & 0xffff0000; //高字节为 0：发送数据。1，接收数据
+	USHORT opt_l = pNetData->OPT & 0x0000ffff;
+	DWORD bytesRecv = 0;
+	DWORD flag = 0;
+
+	USHORT msgID = 0;
+	USHORT msgLength = 0;
+	if (0 == opt_l && 0 == opt_h) //发送了checkuid数据回调
+	{
+		memset(pNetData->buffer, 0, IOCP_BUFFER_SIZE);
+		pNetData->OPT = 0x10000 | 1;
+		WSARecv(pNetData->pSocketData->Socket, &pNetData->wsabuf, IOCP_BUFFER_SIZE, &bytesRecv, &flag, &pNetData->overlapped, NULL);
+	}
+	else if (1 == opt_l && 0 == opt_h)//接收 checkuid数据
+	{
+		msgID = *(USHORT*)pNetData->buffer;
+		msgLength = *(USHORT*)(pNetData->buffer + 2);
+		if (Protos_Game60Fishing::ResEnterFishServer == msgID)
+		{
+			//发送请求进入房间
+			Sleep(500);
+			ReqJoinTable(pNetData);
+		}
+		else
+		{
+			TRANSLOG("接收checkuid数据错误！msgID = %d", msgID);
+		}
+	}
+	else if (2 == opt_l && 0 == opt_h)//发送进入房间回调
+	{
+		memset(pNetData->buffer, 0, IOCP_BUFFER_SIZE);
+		pNetData->OPT = 0x10000 | 2;
+		WSARecv(pNetData->pSocketData->Socket, &pNetData->wsabuf, IOCP_BUFFER_SIZE, &bytesRecv, &flag, &pNetData->overlapped, NULL);
+	}
+	else if (2 == opt_l && 1 == opt_h)//接收进入房间返回
+	{
+		if (msgID == Protos_Game60Fishing::ResJoinRoom)
+		{
+
+		}
+		else
+		{
+			TRANSLOG("接收进入房间消息错误");
+		}
+	}
 	return false;
 }
 
@@ -74,14 +120,14 @@ SOCKET NetService::RegesterNewSocket(INT64 uid, CreateSocketType type, ULONG loc
 	if (1 != d)
 	{
 		closesocket(sData->Socket);
-		cout << "InetPton error " << WSAGetLastError() << endl;
+		TRANSLOG("InetPton error :%d", WSAGetLastError());
 		return -1;
 	}
 	ser_addr.sin_addr = addr;
 	int ret = connect(sData->Socket, (sockaddr*)&ser_addr, sizeof(SOCKADDR_IN));
 	if (ret == SOCKET_ERROR)
 	{
-		cout << "connect error !" << endl;
+		TRANSLOG("connect error !");
 		closesocket(sData->Socket);
 		return INVALID_SOCKET;
 	}
@@ -122,7 +168,7 @@ bool NetService::CheckUid(INT64 uid)
 	auto it = m_IoDataMap.find(uid);
 	if (it == m_IoDataMap.end())
 	{
-		cout << "uid :" << uid << "checkUid error" << endl;
+		TRANSLOG("uid :%lld checkUid error", uid);
 		return false;
 	}
 	it->second->OPT = 1;
@@ -136,5 +182,22 @@ bool NetService::CheckUid(INT64 uid)
 	msg.SerializeToArray(pBuff + 4, msg.ByteSize());
 	DWORD bytsSend;
 	WSASend(it->second->pSocketData->Socket, &it->second->wsabuf, msgLen + 4, &bytsSend, 0, &it->second->overlapped, NULL);
+	return true;
+}
+
+bool NetService::ReqJoinTable(NetIoData* pdata)
+{
+	memset(pdata->buffer, 0, IOCP_BUFFER_SIZE);
+	pdata->OPT = 2;
+	++pdata->sendID;
+	ReqJoinRoomMessage msg;
+	msg.set_roomid(0);
+	USHORT msgID = Protos_Game60Fishing::ReqJoinRoom;
+	memcpy_s(pdata->buffer, 2, &msgID, 2);
+	USHORT msgLen = msg.ByteSize();
+	memcpy_s(pdata->buffer + 2, 2, &msgLen, 2);
+	msg.SerializeToArray(pdata->buffer + 4, msg.ByteSize());
+	DWORD bytsSend;
+	WSASend(pdata->pSocketData->Socket, &pdata->wsabuf, msgLen + 4, &bytsSend, 0, &pdata->overlapped, NULL);
 	return true;
 }

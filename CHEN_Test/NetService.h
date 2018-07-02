@@ -26,6 +26,7 @@ public:
 	bool RemoveSocket(SOCKET s);
 	//实现功能
 	bool CheckUid(INT64 uid);
+	bool ReqJoinTable(NetIoData* pdata);
 private:
 	CRITICAL_SECTION m_cs;
 	map<INT64, NetIoData*> m_IoDataMap;	//创建完成的socket列表
