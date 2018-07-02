@@ -1,0 +1,329 @@
+package com.game.proto;
+
+
+enum Protos_Game60Fishing {
+    
+	ReqEnterFishServer = 6001; //请求和捕鱼服务器建立通信
+	ResEnterFishServer = 6002; //返回通讯结果
+	
+	ReqJoinRoom        = 6003;//请求进入某个房间
+	ResJoinRoom        = 6004;//返回进入房间消息
+	
+	ResCmdFish         = 6006;//同步场景中的鱼
+	
+	ResCmdSyncFish     = 6008;//同步场景中的异步的鱼
+	
+	ReqBullet          = 6009;//发送子弹
+	ResBullet          = 6010;//接收子弹
+	
+	ResCatched         = 6012;//命中鱼的消息
+	
+	
+	ResClearScene      = 6014;//清场消息
+	
+	ResPlayerJoin      = 6016;//玩家加入
+	
+	ReqChangeLauncher  = 6017;//请求切换炮台
+	ResChangeLauncher  = 6018;//切换炮台返回
+	
+	ReqChangeRate	   = 6019; //请求切换倍率
+	ResChangeRate	   = 6020; //切换倍率返回
+	
+	ResCatchedFreeze   = 6022;//冰冻命中鱼的消息
+
+	ResSyncBulletData	= 6024; //同步场景中子弹
+	
+	ReqLeaveGame		= 6025; //请求离开游戏
+	ResLeaveGame		= 6026; //请求离开游戏返回
+	
+	ReqLookUpPlayerInfo      = 6027; //请求查看玩家信息
+    ResLookUpPlayerInfo      = 6028; //返回查看玩家数据
+	
+	ResConnectFinish		 = 6030;  // 连接服务器成功
+	
+	ReqStartSyncFish		 = 6031;  //场景加载完成，开始同步鱼
+	
+	ResPlayerTickOut		= 6032; //玩家被提出游戏
+	
+	ResSyncAddMoney			= 6034; //玩家的钱变更
+}
+
+// 请求进入捕鱼服务器
+message ReqEnterFishServerMessage {
+    optional Protos_Game60Fishing msgID = 1 [default = ReqEnterFishServer];
+
+    
+    required int64 playerOnlyID = 2;//玩家的唯一ID
+	
+	
+   
+}
+
+// 返回链接通讯结果
+message ResEnterFishServerMessage {
+    optional Protos_Game60Fishing msgID = 1 [default = ResEnterFishServer];
+
+    
+    required int32 serverState = 2;//返回结果 1成功，其他为具体的错误代码
+   
+}
+
+// 请求进入渔场
+message ReqJoinRoomMessage {
+    optional Protos_Game60Fishing msgID = 1 [default = ReqJoinRoom];
+
+    
+    required int32 roomID = 2;//房间ID
+	
+	
+	
+	
+   
+}
+
+// 返回进入渔场消息
+message ResJoinRoomMessage {
+    optional Protos_Game60Fishing msgID = 1 [default = ResJoinRoom];
+
+    
+    required bool result = 2;//返回结果 
+	
+	required int32 roomID = 3;//房间ID
+	
+	optional int32 backgroundImage = 4;//背景图样式
+	
+	optional PlayerData playerData = 5;
+   
+}
+
+
+// 返回渔场中的鱼
+message ResCmdFishMessage {
+    optional Protos_Game60Fishing msgID = 1 [default = ResCmdFish];
+
+    
+    required int32 groupID = 2;//鱼群的群组ID
+	required int32 startID = 3;//起始鱼ID
+	required int32 pathID = 4;//路径信息ID
+	
+	
+}
+
+// 返回渔场中的异步鱼
+message ResCmdSyncFishMessage {
+    optional Protos_Game60Fishing msgID = 1 [default = ResCmdSyncFish];
+
+    required int32 fishID 			= 2;//鱼ID
+    required int32 groupID 			= 3;//鱼群的群组ID
+	required double fishTime 		= 4;//鱼的时间
+	required int32 pathGroup 		= 5;//路径群信息ID
+	required int32 pathIdx   		= 6;//路径ID
+	optional bool isActiveEvent 	= 7;
+	optional int32 elapsedTime		= 8;
+	optional int32 delayType 		= 9;//减速类型
+	optional int32 delayScaling 	= 10;//减速百分比
+	optional int32 delayDuration1 	= 11;
+	optional int32 delayDuration2 	= 12;
+	optional int32 delayDuration3 	= 13;
+	optional int32 delayCurrentTime = 14;
+	optional int32 package 			= 15;
+	
+	
+}
+
+// 请求发送子弹
+message ReqBulletMessage {
+    optional Protos_Game60Fishing msgID = 1 [default = ReqBullet];
+
+    
+    required int32 angle = 2;//发送子弹的角度
+	optional int32 lockFishID = 3;//锁定鱼的ID
+	required int32 launcherType = 4;//炮台的类型
+	
+	
+   
+}
+
+// 接收子弹
+message ResBulletMessage {
+    optional Protos_Game60Fishing msgID = 1 [default = ResBullet];
+
+    
+    required int32 bulletID = 2;//子弹ID
+	required int32 launcherType = 3;//炮台类型
+	required int32 angle          = 4;//子弹方向
+	optional int32 energy         = 5;//当前怒气值
+	optional int32 reboundCount   = 6;//
+	optional int32 lockFishID     = 7;//锁定鱼的ID
+   
+}
+
+// 冰冻命中鱼的消息
+message ResCatchedFreezeMessage {
+    optional Protos_Game60Fishing msgID = 1 [default = ResCatchedFreeze];
+
+    
+    required int32 bulletID = 2;//子弹ID
+	required int32 combo = 3;//
+	required int32 goldNum          = 4;//金币数量
+	optional int32 TotalNum         = 5;//钻石数量
+	repeated FishCatchedInfo fishCatchedList = 6;
+   
+}
+
+// 命中鱼的消息
+message ResCatchedMessage {
+    optional Protos_Game60Fishing msgID = 1 [default = ResCatched];
+
+    
+    required int32 bulletID = 2;//子弹ID
+	required int32 combo = 3;//
+	required int32 goldNum          = 4;//金币数量
+	optional int32 TotalNum         = 5;//钻石数量
+	repeated FishCatchedInfo fishCatchedList = 6;
+   
+}
+
+//命中魚的具体信息
+message FishCatchedInfo{
+	optional int32 catchEvent = 1;
+	required int32 fishID = 2;
+	optional int32 nReward = 3;
+	optional int32 lightingFishID = 4;
+
+}
+
+message ResClearSceneMessage{
+	optional Protos_Game60Fishing msgID = 1 [default = ResClearScene];
+	required int32 clearType = 2;//清场类型
+
+}
+
+message ResPlayerJoinMessage{
+	optional Protos_Game60Fishing msgID = 1 [default = ResPlayerJoin];
+	//根据logonserver的消息来具体处理
+	
+	required PlayerData playerData = 2;
+	
+}
+
+//发送自己和其他玩家信息的时候，根据optional关键词来过滤。
+message PlayerData{
+	optional int64 			playerId 		= 1;
+	optional string 		playerName 		= 2;
+	optional int32          sex				= 3;
+	optional int32 			headicon        = 4;//头像框
+	optional string 		icon        	= 5;//头像
+	optional int32          vipLevel 		= 6;
+	optional int64 			goldNum			= 7;
+	optional int32 			seat			= 8;//座位号
+	optional int32          launcherType    = 9;//炮台类型
+	optional int32			rateIndex 		= 10;//倍率
+	optional int32 			energy     		= 11;//当前的怒气技能的值
+}
+
+
+// 请求切换炮台
+message ReqChangeLauncherMessage {
+    optional Protos_Game60Fishing msgID = 1 [default = ReqChangeLauncher];
+
+    required int32 seat = 2;//座位ID
+	required int32 launcherType = 3;//炮台的类型
+	
+}
+
+// 切换炮台返回
+message ResChangeLauncherMessage {
+    optional Protos_Game60Fishing msgID = 1 [default = ResChangeLauncher];
+
+    required int32 seat = 2;//座位ID
+	required int32 launcherType = 3;//炮台的类型
+	
+}
+
+message ReqChangeRateMessage{
+	optional Protos_Game60Fishing msgID = 1 [default = ReqChangeRate];
+	
+	required bool UpRoDownRate = 2;// true增加false减少倍率
+}
+
+message ResChangeRateMessage{
+	optional Protos_Game60Fishing msgID = 1 [default = ResChangeRate];
+	
+	required int32 Seat = 2;     //座位ID
+	required int32 RateIndex = 3; //倍率
+	required bool IsCanUseRate = 4; //是否可用
+}
+
+message SyncBulletData
+{
+	optional uint32  	BulletID = 1;
+	optional int32		Degree = 2;
+	optional uint32  	Time = 3;
+	optional int32		BulletType = 4;
+	optional int32		RateIdx = 5;
+	optional int32		ReboundCount = 6;
+	optional uint32  	LockFishID = 7;  
+}
+
+message ResSyncBulletDataMessage
+{
+	optional Protos_Game60Fishing msgID = 1 [default = ResSyncBulletData];
+	repeated SyncBulletData  syncBulletData = 2;//子弹信息
+}
+
+message ReqLeaveGameMessage
+{
+	optional Protos_Game60Fishing msgID = 1 [default = ReqLeaveGame];
+	required int32 seat = 2;//座位ID
+	
+}
+
+message ResLeaveGameMessage
+{
+	optional Protos_Game60Fishing msgID = 1 [default = ResLeaveGame];
+	required int32 seat = 2;//座位ID
+}
+
+//请求查看玩家信息
+message ReqLookUpPlayerInfoMessage {
+    optional Protos_Game60Fishing msgID                  = 1 [default = ReqLookUpPlayerInfo]; 
+
+    optional int64   playerId                    = 2;//查看的玩家ID
+}
+
+//返回查看玩家数据
+message ResLookUpPlayerInfoMessage {
+    optional Protos_Game60Fishing msgID                  = 1 [default = ResLookUpPlayerInfo]; 
+
+    optional int64   playerId                    = 2;//查看的玩家ID
+    optional int32   vipLevel                    = 3;//vip等级
+    optional string   icon                       = 4;//icon
+    optional string   name                       = 5;//显示姓名
+    optional int32    sex                        = 6;//性别
+    optional int32   titleId                     = 7;//成就ID
+    optional double   gameWinMaxMoney            = 8;//单局最高盈利
+    optional double   money                      = 9;//金额
+    optional int32   charmValue                  = 10;//魅力值
+    optional string signature                    = 11; //个性签名
+    optional int32   headIcon                    = 12; //头像框
+}
+
+// 连接服务器成功
+message ResConnectFinishMessage{
+	optional Protos_Game60Fishing msgID          = 1 [default = ResConnectFinish]; 
+}
+//场景加载完成，开始同步鱼
+message ReqStartSyncFishMessage{
+	optional Protos_Game60Fishing msgID          = 1 [default = ReqStartSyncFish]; 	
+}
+// 玩家被提出游戏
+message ResPlayerTickOutMessage{
+	optional Protos_Game60Fishing msgID          = 1 [default = ResPlayerTickOut]; 	
+}
+//玩家的钱变更
+message ResSyncAddMoneyMessage{
+	optional Protos_Game60Fishing msgID          = 1 [default = ResSyncAddMoney]; 
+	required int64 add_goldNum = 2; // 改变货币值
+    optional int32 reason  = 4; // 原因
+}
