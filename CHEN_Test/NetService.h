@@ -25,6 +25,7 @@ public:
 	SOCKET RegesterNewSocket(INT64 uid, CreateSocketType type, ULONG localIP, USHORT port);
 	bool RemoveSocket(SOCKET s);
 	//实现功能
+	bool RecvCmdData(NetIoData* pdata,DWORD length);
 	bool CheckUid(INT64 uid);
 	bool ReqJoinTable(NetIoData* pdata);
 private:

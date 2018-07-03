@@ -42,8 +42,6 @@ bool NetService::Callback(PerIocpData * pData)
 	DWORD bytesRecv = 0;
 	DWORD flag = 0;
 
-	USHORT msgID = 0;
-	USHORT msgLength = 0;
 	if (0 == opt_l && 0 == opt_h) //发送了checkuid数据回调
 	{
 		memset(pNetData->buffer, 0, IOCP_BUFFER_SIZE);
@@ -52,6 +50,8 @@ bool NetService::Callback(PerIocpData * pData)
 	}
 	else if (1 == opt_l && 0 == opt_h)//接收 checkuid数据
 	{
+		USHORT msgID = 0;
+		USHORT msgLength = 0;
 		msgID = *(USHORT*)pNetData->buffer;
 		msgLength = *(USHORT*)(pNetData->buffer + 2);
 		if (Protos_Game60Fishing::ResEnterFishServer == msgID)
@@ -73,14 +73,7 @@ bool NetService::Callback(PerIocpData * pData)
 	}
 	else if (2 == opt_l && 1 == opt_h)//接收进入房间返回
 	{
-		if (msgID == Protos_Game60Fishing::ResJoinRoom)
-		{
 
-		}
-		else
-		{
-			TRANSLOG("接收进入房间消息错误");
-		}
 	}
 	return false;
 }
@@ -160,6 +153,25 @@ bool NetService::RemoveSocket(SOCKET s)
 	//		return true;
 	//	}
 	//}
+	return false;
+}
+
+bool NetService::RecvCmdData(NetIoData * pdata, DWORD length)
+{
+	char* pBuff = pdata->buffer;
+	while (*pBuff != '\0')
+	{
+		UINT anserID = *(UINT*)pBuff;
+		if (anserID == pdata->sendID)
+		{
+			pBuff += 4;
+			UINT serSendID = *(UINT*)pBuff;
+			pBuff += 4;
+			USHORT msgID;
+			USHORT msgLength;
+			pdata->recvID = serSendID;
+		}
+	}
 	return false;
 }
 

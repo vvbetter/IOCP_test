@@ -6,7 +6,6 @@ bool CreateSocket(CreateSocketType type, UINT localIP, USHORT port, CreateSocket
 	SOCKET s = INVALID_SOCKET;
 	if (type & CST_UDP_IOCP)
 	{
-		s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 		s = WSASocket(AF_INET, SOCK_DGRAM, IPPROTO_UDP, NULL, 0, WSA_FLAG_OVERLAPPED);
 	}
 	else if (type & CST_TCP_IOCP)
