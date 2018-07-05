@@ -31,7 +31,7 @@ const HANDLE CLog::GetHanle()
 	return m_fileHandle;
 }
 
-bool CLog::Callback(PerIocpData * pData)
+bool CLog::Callback(PerIocpData * pData, DWORD size)
 {
 	//Log("callback");
 	return true;
@@ -87,7 +87,7 @@ bool CLog::TranceLog(const char* str, ...)
 		vsprintf_s(pBuffer, nCount + 1, str, var);
 	}
 #ifdef _DEBUG
-	cout << pBuffer << endl;
+	cout << pBuffer;
 #endif // _DEBUG
 
 	INT writenLen = 0;

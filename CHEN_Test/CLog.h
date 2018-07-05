@@ -16,7 +16,7 @@ public:
 public:
 	//interface
 	virtual const HANDLE GetHanle();
-	virtual bool Callback(PerIocpData* pData);
+	virtual bool Callback(PerIocpData* pData, DWORD size);
 	virtual bool RegIOHandle();
 public:
 	bool Init();

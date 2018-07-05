@@ -9,6 +9,7 @@ struct NetIoData :public PerIocpData
 	UINT OPT;
 	UINT sendID;
 	UINT recvID;
+	INT64 uid;
 };
 
 class NetService : public IOCPHanlder
@@ -18,7 +19,7 @@ public:
 	~NetService();
 public: //interface
 	virtual const HANDLE GetHanle() ;
-	virtual bool Callback(PerIocpData* pData);
+	virtual bool Callback(PerIocpData* pData, DWORD size);
 	virtual bool RegIOHandle();
 public:
 	bool Init();

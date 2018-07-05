@@ -29,7 +29,7 @@ struct PerIocpData
 interface IOCPHanlder
 {
 	virtual const HANDLE GetHanle() = 0;
-	virtual bool Callback(PerIocpData* pData) = 0;
+	virtual bool Callback(PerIocpData* pData, DWORD size) = 0;
 	virtual bool RegIOHandle() = 0;
 };
 
