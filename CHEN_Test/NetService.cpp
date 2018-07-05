@@ -92,6 +92,10 @@ bool NetService::Callback(PerIocpData * pData, DWORD size)
 	{
 		TRANSLOG("接收进入房间返回\n");
 	}
+	else if (2 == opt_h && 0 == opt_l)//发送接收到的服务器返回消息ID 回调
+	{
+		TRANSLOG("发送接收到的服务器返回消息ID 回调\n");
+	}
 	else
 	{
 		TRANSLOG("opt_h = %d,opt_l = %d\n", opt_h, opt_l);
@@ -201,7 +205,17 @@ bool NetService::RecvCmdData(NetIoData * pdata, DWORD length)
 		pBuff += msgLength;
 		pdata->recvID = serSendID;
 	}
-	return false;
+	//回复服务器收到消息ID
+	DWORD bytsSend;
+	memcpy_s(pdata->buffer, 4, &pdata->recvID, 4);
+	pdata->OPT = 0x20000 | 0;
+	pdata->wsabuf.len = 4;
+	int ret = WSASend(pdata->pSocketData->Socket, &pdata->wsabuf, 1, &bytsSend, 0, &pdata->overlapped, NULL);
+	if (ret == SOCKET_ERROR)
+	{
+		TRANSLOG("回复服务器消息ID错误 %d", WSAGetLastError());
+	}
+	return true;
 }
 
 bool NetService::CheckUid(INT64 uid)
