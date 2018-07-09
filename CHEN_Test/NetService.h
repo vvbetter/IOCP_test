@@ -28,7 +28,10 @@ public:
 	//实现功能
 	bool RecvCmdData(NetIoData* pdata,DWORD length);
 	bool CheckUid(INT64 uid);
-	bool ReqJoinTable(NetIoData* pdata);
+	bool ReqJoinTable(INT64 uid);
+	bool ReqStartSyncFish(INT64 uid);
+private:
+	NetIoData * GetIoDataPointByUid(const INT64 uid);
 private:
 	CRITICAL_SECTION m_cs;
 	map<INT64, NetIoData*> m_IoDataMap;	//创建完成的socket列表
