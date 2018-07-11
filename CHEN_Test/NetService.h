@@ -30,6 +30,7 @@ public:
 	bool CheckUid(INT64 uid);
 	bool ReqJoinTable(INT64 uid);
 	bool ReqStartSyncFish(INT64 uid);
+	bool ReqBullet(INT64 uid);
 private:
 	NetIoData * GetIoDataPointByUid(const INT64 uid);
 private:

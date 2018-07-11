@@ -103,7 +103,7 @@ bool IOCPHelper::_WorkThread()
 		pIocpData = (PerIocpData*)CONTAINING_RECORD(pOverlapped, PerIocpData, overlapped);
 		if (pHandle)
 		{
-			pHandle->Callback(pIocpData, BytesTransferred);
+			pHandle->Callback(pIocpData, IOCP_BUFFER_SIZE);
 		}
 	}
 	//ÍË³öÏß³Ì

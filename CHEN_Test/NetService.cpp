@@ -45,6 +45,8 @@ bool NetService::Callback(PerIocpData * pData, DWORD size)
 
 	if (1 == opt_l && 0 == opt_h) //发送了checkuid数据回调
 	{
+		WaitForSingleObject(pNetData->overlapped.hEvent, INFINITE);
+		WSAResetEvent(pNetData->overlapped.hEvent);
 		TRANSLOG("checkuid 回调\n");
 		memset(pNetData->buffer, 0, IOCP_BUFFER_SIZE);
 		pNetData->OPT = 0x10000 | 1;
@@ -74,6 +76,15 @@ bool NetService::Callback(PerIocpData * pData, DWORD size)
 		{
 			//接受服务器准备完成消息
 			TRANSLOG("验证玩家ID通过\n");
+			//接收服务器通知可以进入游戏
+			WaitForSingleObject(pNetData->overlapped.hEvent, INFINITE);
+			WSAResetEvent(pNetData->overlapped.hEvent);
+			TRANSLOG("接收服务器通知可以进入游戏\n");
+			memset(pNetData->buffer, 0, IOCP_BUFFER_SIZE);
+			pNetData->OPT = 0xf0000 | 0;
+			pNetData->wsabuf.len = IOCP_BUFFER_SIZE;
+			WSARecv(pNetData->pSocketData->Socket, &pNetData->wsabuf, 1, &bytesRecv, &flag, &pNetData->overlapped, NULL);
+
 		}
 		else
 		{
@@ -82,6 +93,8 @@ bool NetService::Callback(PerIocpData * pData, DWORD size)
 	}
 	else if (0 == opt_h && 2 == opt_l)//发送进入房间回调
 	{
+		WaitForSingleObject(pNetData->overlapped.hEvent, INFINITE);
+		WSAResetEvent(pNetData->overlapped.hEvent);
 		TRANSLOG("发送进入房间回调\n");
 		memset(pNetData->buffer, 0, IOCP_BUFFER_SIZE);
 		pNetData->OPT = 0xf0000 | 0;
@@ -90,7 +103,19 @@ bool NetService::Callback(PerIocpData * pData, DWORD size)
 	}
 	else if (0 == opt_h && 3 == opt_l) //发送场景加载完成消息 回调
 	{
+		WaitForSingleObject(pNetData->overlapped.hEvent, INFINITE);
+		WSAResetEvent(pNetData->overlapped.hEvent);
 		TRANSLOG("发送场景加载完成消息回调\n");
+		memset(pNetData->buffer, 0, IOCP_BUFFER_SIZE);
+		pNetData->OPT = 0xf0000 | 0;
+		pNetData->wsabuf.len = IOCP_BUFFER_SIZE;
+		WSARecv(pNetData->pSocketData->Socket, &pNetData->wsabuf, 1, &bytesRecv, &flag, &pNetData->overlapped, NULL);
+	}
+	else if (0 == opt_h && 4 == opt_l)//发送子弹回调
+	{
+		WaitForSingleObject(pNetData->overlapped.hEvent, INFINITE);
+		WSAResetEvent(pNetData->overlapped.hEvent);
+		//TRANSLOG("发送子弹回调\n");
 		memset(pNetData->buffer, 0, IOCP_BUFFER_SIZE);
 		pNetData->OPT = 0xf0000 | 0;
 		pNetData->wsabuf.len = IOCP_BUFFER_SIZE;
@@ -98,8 +123,10 @@ bool NetService::Callback(PerIocpData * pData, DWORD size)
 	}
 	else if (2 == opt_h && 0 == opt_l)//发送接收到的服务器返回消息ID 回调
 	{
-		TRANSLOG("发送接收到的服务器返回消息ID 回调\n");
 		//继续接受消息
+		WaitForSingleObject(pNetData->overlapped.hEvent, INFINITE);
+		WSAResetEvent(pNetData->overlapped.hEvent);
+		//TRANSLOG("发送接收到的服务器返回消息ID 回调\n");
 		memset(pNetData->buffer, 0, IOCP_BUFFER_SIZE);
 		pNetData->OPT = 0xf0000 | 0;
 		pNetData->wsabuf.len = IOCP_BUFFER_SIZE;
@@ -107,7 +134,7 @@ bool NetService::Callback(PerIocpData * pData, DWORD size)
 	}
 	else if (0xf == opt_h && 0 == opt_l) //接受服务器数据
 	{
-		TRANSLOG("接收服务器数据\n");
+		//TRANSLOG("接收服务器数据\n");
 		RecvCmdData(pNetData, size);
 	}
 	else
@@ -200,6 +227,8 @@ bool NetService::RemoveSocket(SOCKET s)
 }
 bool NetService::RecvCmdData(NetIoData * pdata, DWORD length)
 {
+	WaitForSingleObject(pdata->overlapped.hEvent, INFINITE);
+	WSAResetEvent(pdata->overlapped.hEvent);
 	if (length < 4)
 	{
 		TRANSLOG("uid:%lld RecvCmdData error size = %d\n", pdata->uid, length);
@@ -218,13 +247,16 @@ bool NetService::RecvCmdData(NetIoData * pdata, DWORD length)
 		while (pBuff != pend)
 		{
 			UINT serSendID = *(UINT*)pBuff;
+			if (serSendID == 0) break;
 			pBuff += 4;
 			USHORT msgID = *(USHORT*)pBuff;
+			if (msgID == 0) break;
 			pBuff += 2;
 			USHORT msgLength = *(USHORT*)pBuff;
+			if (msgLength == 0) break;
 			pBuff += (msgLength + 2);
 			pdata->recvID = (serSendID == pdata->recvID + 1 ? serSendID : pdata->recvID);
-			TRANSLOG("uid:%lld 收到命令 server answerid:%d, server sendid:%d, msgID:%d, msglength:%d\n", pdata->uid, anserID, serSendID, msgID, msgLength);
+			//TRANSLOG("uid:%lld 收到命令长度:%d, server answerid:%d, server sendid:%d, msgID:%d, msglength:%d\n", pdata->uid, length, anserID, serSendID, msgID, msgLength);
 		}
 	}
 	//回复服务器收到消息ID
@@ -236,12 +268,8 @@ bool NetService::RecvCmdData(NetIoData * pdata, DWORD length)
 	memcpy_s(pdata->buffer, 4, &tb, 4);
 	pdata->OPT = 0x20000 | 0;
 	pdata->wsabuf.len = 4;
-	TRANSLOG("uid:%lld 接收 RecvCmdData length = %d, 回复服务器消息id = %d\n", pdata->uid, length, pdata->recvID);
-	for (UINT i = 0; i < 4; ++i)
-	{
-		TRANSLOG("%d ", (int)*((char*)pdata->buffer + i));
-	}
 	int ret = WSASend(pdata->pSocketData->Socket, &pdata->wsabuf, 1, &bytsSend, 0, &pdata->overlapped, NULL);
+	TRANSLOG("uid:%lld 接收 RecvCmdData length = %d, 回复服务器消息id = %d，回复消息长度=%d\n", pdata->uid, length, pdata->recvID, bytsSend);
 	if (ret == SOCKET_ERROR)
 	{
 		TRANSLOG("回复服务器消息ID错误 %d", WSAGetLastError());
@@ -276,9 +304,12 @@ bool NetService::ReqJoinTable(INT64 uid)
 {
 	NetIoData* pdata = GetIoDataPointByUid(uid);
 	if (pdata == NULL) return false;
+	WaitForSingleObject(pdata->overlapped.hEvent, INFINITE);
+	WSAResetEvent(pdata->overlapped.hEvent);
 	memset(pdata->buffer, 0, IOCP_BUFFER_SIZE);
 	pdata->OPT = 2;
 	++pdata->sendID;
+	pdata->recvID = 2;
 	ReqJoinRoomMessage msg;
 	msg.set_roomid(0);
 	UINT answerID = SET_ANSWER(pdata->recvID);
@@ -304,9 +335,12 @@ bool NetService::ReqJoinTable(INT64 uid)
 bool NetService::ReqStartSyncFish(INT64 uid)
 {
 	NetIoData* pdata = GetIoDataPointByUid(uid);
+	WaitForSingleObject(pdata->overlapped.hEvent, INFINITE);
+	WSAResetEvent(pdata->overlapped.hEvent);
 	memset(pdata->buffer, 0, IOCP_BUFFER_SIZE);
 	pdata->OPT = 3;
 	++pdata->sendID;
+	pdata->recvID = 3;
 	ReqStartSyncFishMessage msg;
 	UINT answerID = SET_ANSWER(pdata->recvID);
 	UINT tc = htonl(answerID);
@@ -324,6 +358,38 @@ bool NetService::ReqStartSyncFish(INT64 uid)
 	if (ret == SOCKET_ERROR)
 	{
 		TRANSLOG("ReqStartSyncFish send error,%d", WSAGetLastError());
+	}
+	return true;
+}
+
+bool NetService::ReqBullet(INT64 uid)
+{
+	NetIoData* pdata = GetIoDataPointByUid(uid);
+	WaitForSingleObject(pdata->overlapped.hEvent, INFINITE);
+	WSAResetEvent(pdata->overlapped.hEvent);
+	memset(pdata->buffer, 0, IOCP_BUFFER_SIZE);
+	pdata->OPT = 4;
+	++pdata->sendID;
+	ReqBulletMessage msg;
+	msg.set_angle(-25);
+	msg.set_lockfishid(0);
+	msg.set_launchertype(0);
+	UINT answerID = SET_ANSWER(pdata->recvID);
+	UINT tc = htonl(answerID);
+	memcpy_s(pdata->buffer, 4, &tc, 4);
+	UINT sendID = htonl(pdata->sendID);
+	memcpy_s(pdata->buffer + 4, 4, &sendID, 4);
+	USHORT msgID = htons(Protos_Game60Fishing::ReqBullet);
+	memcpy_s(pdata->buffer + 8, 2, &msgID, 2);
+	USHORT msgLen = htons(msg.ByteSize());
+	memcpy_s(pdata->buffer + 10, 2, &msgLen, 2);
+	msg.SerializeToArray(pdata->buffer + 12, msg.ByteSize());
+	DWORD bytsSend;
+	pdata->wsabuf.len = msg.ByteSize() + 12;
+	int ret = WSASend(pdata->pSocketData->Socket, &pdata->wsabuf, 1, &bytsSend, 0, &pdata->overlapped, NULL);
+	if (ret == SOCKET_ERROR)
+	{
+		TRANSLOG("ReqBullet send error,%d", WSAGetLastError());
 	}
 	return true;
 }
