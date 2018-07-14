@@ -12,12 +12,12 @@ using namespace std;
 		ss << log; \
 		cout <<ss.str() <<endl; \
 	}
-
 #define IOCP_BUFFER_SIZE 8*1024
 #define SAFE_DELETE(x)		\
 	{						\
-		if (x) delete x;	\
-		x = NULL;			\
+		if (x)				\
+		{delete x;			\
+		x = NULL;}			\
 	}						
 
 struct PerIocpData
