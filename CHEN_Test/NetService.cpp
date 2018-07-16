@@ -404,3 +404,40 @@ NetIoData * NetService::GetIoDataPointByUid(const INT64 uid)
 	}
 	return uit->second;
 }
+
+bool NetService::ReqNewRecvCmd(NetIoData * old_data, int OPT)
+{
+	DWORD bytesRecv;
+	DWORD flag;
+	NetIoData* pNetData = new NetIoData();
+	memset(pNetData, 0, sizeof(NetIoData));
+	pNetData->pSocketData = old_data->pSocketData;
+	pNetData->uid = old_data->uid;
+	pNetData->recvID = old_data->recvID;
+	pNetData->sendID = old_data->sendID;
+	pNetData->wsabuf.buf = pNetData->buffer;
+	pNetData->wsabuf.len = IOCP_BUFFER_SIZE;
+	pNetData->OPT = OPT;
+	pNetData->wsabuf.len = IOCP_BUFFER_SIZE;
+	WSARecv(pNetData->pSocketData->Socket, &pNetData->wsabuf, 1, &bytesRecv, &flag, &pNetData->overlapped, NULL);
+	SAFE_DELETE(old_data);
+	return false;
+}
+
+bool NetService::ReqNewSendCmd(NetIoData * old_data, int OPT)
+{
+	DWORD bytsSend;
+	NetIoData* pNetData = new NetIoData();
+	memset(pNetData, 0, sizeof(NetIoData));
+	pNetData->pSocketData = old_data->pSocketData;
+	pNetData->uid = old_data->uid;
+	pNetData->recvID = old_data->recvID;
+	pNetData->sendID = old_data->sendID;
+	pNetData->wsabuf.buf = pNetData->buffer;
+	pNetData->wsabuf.len = IOCP_BUFFER_SIZE;
+	pNetData->OPT = OPT;
+	pNetData->wsabuf.len = IOCP_BUFFER_SIZE;
+	int ret = WSASend(pNetData->pSocketData->Socket, &pNetData->wsabuf, 1, &bytsSend, 0, &pNetData->overlapped, NULL);
+	SAFE_DELETE(old_data);
+	return false;
+}

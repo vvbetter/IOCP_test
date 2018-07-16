@@ -33,6 +33,8 @@ public:
 	bool ReqBullet(INT64 uid);
 private:
 	NetIoData * GetIoDataPointByUid(const INT64 uid);
+	bool ReqNewRecvCmd(NetIoData* old_data,int OPT);
+	bool ReqNewSendCmd(NetIoData* old_data,int OPT);
 private:
 	CRITICAL_SECTION m_cs;
 	map<INT64, NetIoData*> m_IoDataMap;	//创建完成的socket列表

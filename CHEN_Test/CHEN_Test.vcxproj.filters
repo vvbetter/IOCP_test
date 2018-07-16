@@ -19,6 +19,9 @@
     <Filter Include="lib">
       <UniqueIdentifier>{c1d2f0f1-5093-448d-accc-e45c2acda5f9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ThreadPool">
+      <UniqueIdentifier>{c2fd947c-dc56-44dd-8677-aef5cc7c2b93}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -45,6 +48,9 @@
     <ClInclude Include="proto_source\Game60_FishingMessage.pb.h">
       <Filter>proto_source</Filter>
     </ClInclude>
+    <ClInclude Include="ThreadPool.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -70,6 +76,9 @@
     </ClCompile>
     <ClCompile Include="proto_source\Game60_FishingMessage.pb.cc">
       <Filter>proto_source</Filter>
+    </ClCompile>
+    <ClCompile Include="ThreadPool.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
