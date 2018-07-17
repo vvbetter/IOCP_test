@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "ThreadPool.h"
 #include "Interface.h"
-#include "CS_LockGuide.h"
 
 static unsigned int WINAPI ThreadPoolWorkThread(void *Param)
 {
@@ -19,8 +18,6 @@ void ThreadPool::ThreadFunc()
 		if (NULL != oneElem)
 		{
 			oneElem->callback(oneElem->pParam);
-			delete oneElem->pParam;
-			delete oneElem;
 		}
 		Sleep(1);
 	}
@@ -28,26 +25,31 @@ void ThreadPool::ThreadFunc()
 
 _ThreadElem* ThreadPool::GetElem()
 {
-	AUTO_LOCKER(m_cs);
+	AUTO_LOCKER(m_csLocker);
 	if (m_elems.size() == 0) return NULL;
 	//遍历
-	m_elemIt = m_elems.begin();
+	
 	DWORD tick = timeGetTime();
-	for (; m_elemIt != m_elems.end(); ++m_elemIt)
+	for (auto m_elemIt = m_elems.begin(); m_elemIt != m_elems.end();)
 	{
 		_ThreadElem* oneElem = *m_elemIt;
 		if (tick - oneElem->startTime > oneElem->interval)
 		{
+			oneElem->startTime = tick;
+			if (oneElem->runCount == 0 && oneElem->runCount != MAX_THREAD_RUNCOUNT)
+			{
+				SAFE_DELETE(oneElem->pParam);
+				SAFE_DELETE(oneElem);
+				m_elemIt = m_elems.erase(m_elemIt);
+				continue;
+			}
 			if (oneElem->runCount != MAX_THREAD_RUNCOUNT)
 			{
 				--oneElem->runCount;
 			}
-			if (oneElem->runCount <= 0)
-			{
-				m_elemIt = m_elems.erase(m_elemIt);
-			}
 			return oneElem;
 		}
+		++m_elemIt;
 	}
 	return NULL;
 }
@@ -78,8 +80,6 @@ bool ThreadPool::Init()
 {
 	Log("初始化线程池。。。");
 	int errorCode = 0;
-	//初始化临界区
-	InitializeCriticalSection(&m_cs);
 	//初始化线程
 	SYSTEM_INFO sysInfo;
 	GetSystemInfo(&sysInfo);
@@ -89,16 +89,16 @@ bool ThreadPool::Init()
 	{
 		::_beginthreadex(NULL, 0, ThreadPoolWorkThread, this, 0, 0);
 	}
-	//初始化变量
-	m_elemIt = m_elems.begin();
 	//初始化时间控制
 	timeBeginPeriod(1);
+	//初始化临界区锁
+	m_csLocker.init();
 	return true;
 }
 
 bool ThreadPool::AddElem(_ThreadElem* param)
 {
-	if (param->runCount <= 0 && param->runCount != MAX_THREAD_RUNCOUNT) 
+	if (param->runCount == 0 && param->runCount != MAX_THREAD_RUNCOUNT) 
 	{
 		return false;
 	}
@@ -106,14 +106,14 @@ bool ThreadPool::AddElem(_ThreadElem* param)
 	{
 		return false;
 	}
-	AUTO_LOCKER(m_cs);
+	AUTO_LOCKER(m_csLocker);
 	m_elems.push_back(param);
 	return true;
 }
 
 bool ThreadPool::HasSpace()
 {
-	AUTO_LOCKER(m_cs);
+	AUTO_LOCKER(m_csLocker);
 	if (m_elems.size() < MAX_THREAD_ELEMS)
 	{
 		return true;

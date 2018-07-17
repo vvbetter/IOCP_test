@@ -2,7 +2,6 @@
 #include "NetService.h"
 #include "IOCPHelper.h"
 #include "CLog.h"
-#include "CS_LockGuide.h"
 #include "proto_source/Game60_FishingMessage.pb.h"
 #include <ws2tcpip.h>
 
@@ -18,7 +17,6 @@ NetService::NetService()
 NetService::~NetService()
 {
 	WSACleanup();
-	DeleteCriticalSection(&m_cs);
 }
 
 const HANDLE NetService::GetHanle()
@@ -160,7 +158,7 @@ bool NetService::Init()
 		TRANSLOG("WSAStartup ³õÊ¼»¯Ê§°Ü:%d", WSAGetLastError());
 		return false;
 	}
-	InitializeCriticalSection(&m_cs);
+	m_csLocker.init();
 	return true;
 }
 #define  UDP_SOCKET_PORT_START 50000
@@ -202,7 +200,7 @@ SOCKET NetService::RegesterNewSocket(INT64 uid, CreateSocketType type, ULONG loc
 	pIodata->wsabuf.len = IOCP_BUFFER_SIZE;
 	pIodata->overlapped.hEvent = WSACreateEvent();
 	{
-		AUTO_LOCKER(m_cs);
+		AUTO_LOCKER(m_csLocker);
 		m_IoDataMap[uid] = pIodata;
 	}
 	RegIOHandle();
@@ -396,7 +394,7 @@ bool NetService::ReqBullet(INT64 uid)
 
 NetIoData * NetService::GetIoDataPointByUid(const INT64 uid)
 {
-	AUTO_LOCKER(m_cs);
+	AUTO_LOCKER(m_csLocker);
 	auto uit = m_IoDataMap.find(uid);
 	if (uit == m_IoDataMap.end())
 	{

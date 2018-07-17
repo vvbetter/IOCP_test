@@ -1,5 +1,6 @@
 #pragma once
 #include "Interface.h"
+#include "CS_LockGuide.h"
 #include <process.h>
 #include <list>
 #include <Windows.h>
@@ -18,11 +19,11 @@ struct _ThreadElem
 {
 	void(*callback)(IThreadParam*);
 	IThreadParam* pParam;
-	INT runCount;	//
+	DWORD runCount;	//
 	DWORD startTime;//ms timeGetTime()
 	DWORD interval; //ms
-	_ThreadElem( void(*cb)(IThreadParam*) = NULL , IThreadParam* param = NULL, INT rc = 0, DWORD st = 0, DWORD it = 0)
-		:callback(cb), pParam(param), runCount(rc), startTime(st), interval(it) {}
+	_ThreadElem( void(*cb)(IThreadParam*) = NULL , IThreadParam* param = NULL, DWORD runCount = 0, DWORD startTime = 0, DWORD interval = 0)
+		:callback(cb), pParam(param), runCount(runCount), startTime(startTime), interval(interval) {}
 };
 
 class ThreadPool
@@ -43,8 +44,7 @@ private:
 private:
 	bool m_bRun;
 	volatile unsigned int m_threadNum;
-	CRITICAL_SECTION m_cs;
+	CS_LockGuide m_csLocker;
 	list<_ThreadElem*> m_elems;
-	list<_ThreadElem*>::iterator m_elemIt;
 };
 

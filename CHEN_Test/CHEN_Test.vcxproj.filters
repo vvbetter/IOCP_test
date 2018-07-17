@@ -22,6 +22,9 @@
     <Filter Include="ThreadPool">
       <UniqueIdentifier>{c2fd947c-dc56-44dd-8677-aef5cc7c2b93}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Test">
+      <UniqueIdentifier>{519f31de-fbc5-4f68-a020-c8f273e79f1a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -51,6 +54,9 @@
     <ClInclude Include="ThreadPool.h">
       <Filter>ThreadPool</Filter>
     </ClInclude>
+    <ClInclude Include="TestClient.h">
+      <Filter>Test</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -79,6 +85,9 @@
     </ClCompile>
     <ClCompile Include="ThreadPool.cpp">
       <Filter>ThreadPool</Filter>
+    </ClCompile>
+    <ClCompile Include="TestClient.cpp">
+      <Filter>Test</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
