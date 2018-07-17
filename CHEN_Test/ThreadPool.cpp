@@ -30,26 +30,26 @@ _ThreadElem* ThreadPool::GetElem()
 {
 	AUTO_LOCKER(m_cs);
 	if (m_elems.size() == 0) return NULL;
-	if (m_elemIt == m_elems.end())
+	//遍历
+	m_elemIt = m_elems.begin();
+	DWORD tick = timeGetTime();
+	for (; m_elemIt != m_elems.end(); ++m_elemIt)
 	{
-		m_elemIt = m_elems.begin();
+		_ThreadElem* oneElem = *m_elemIt;
+		if (tick - oneElem->startTime > oneElem->interval)
+		{
+			if (oneElem->runCount != MAX_THREAD_RUNCOUNT)
+			{
+				--oneElem->runCount;
+			}
+			if (oneElem->runCount <= 0)
+			{
+				m_elemIt = m_elems.erase(m_elemIt);
+			}
+			return oneElem;
+		}
 	}
-	_ThreadElem* p = *m_elemIt;
-	if (p->runCount == MAX_THREAD_RUNCOUNT)
-	{
-		++m_elemIt;
-	}
-	else if (p->runCount <= 0)
-	{
-		m_elemIt = m_elems.erase(m_elemIt);
-		return NULL;
-	}
-	else
-	{
-		--p->runCount;
-		++m_elemIt;
-	}
-	return p;
+	return NULL;
 }
 
 
@@ -62,6 +62,7 @@ ThreadPool::ThreadPool()
 
 ThreadPool::~ThreadPool()
 {
+	timeEndPeriod(1);
 }
 ThreadPool* ThreadPool::instance = NULL;
 ThreadPool* ThreadPool::Instance()
@@ -90,6 +91,8 @@ bool ThreadPool::Init()
 	}
 	//初始化变量
 	m_elemIt = m_elems.begin();
+	//初始化时间控制
+	timeBeginPeriod(1);
 	return true;
 }
 

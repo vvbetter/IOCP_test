@@ -2,6 +2,8 @@
 #include "Interface.h"
 #include <process.h>
 #include <list>
+#include <Windows.h>
+#pragma comment(lib, "winmm.lib")
 
 #define MAX_THREAD_ELEMS 2000
 #define MAX_THREAD_RUNCOUNT -1
@@ -16,7 +18,11 @@ struct _ThreadElem
 {
 	void(*callback)(IThreadParam*);
 	IThreadParam* pParam;
-	INT runCount;
+	INT runCount;	//
+	DWORD startTime;//ms timeGetTime()
+	DWORD interval; //ms
+	_ThreadElem( void(*cb)(IThreadParam*) = NULL , IThreadParam* param = NULL, INT rc = 0, DWORD st = 0, DWORD it = 0)
+		:callback(cb), pParam(param), runCount(rc), startTime(st), interval(it) {}
 };
 
 class ThreadPool

@@ -49,7 +49,7 @@
       <Filter>proto_source</Filter>
     </ClInclude>
     <ClInclude Include="ThreadPool.h">
-      <Filter>头文件</Filter>
+      <Filter>ThreadPool</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -78,7 +78,7 @@
       <Filter>proto_source</Filter>
     </ClCompile>
     <ClCompile Include="ThreadPool.cpp">
-      <Filter>源文件</Filter>
+      <Filter>ThreadPool</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
