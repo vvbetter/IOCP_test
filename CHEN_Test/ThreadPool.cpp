@@ -76,16 +76,13 @@ ThreadPool* ThreadPool::Instance()
 	return instance;
 }
 
-bool ThreadPool::Init()
+bool ThreadPool::Init(UINT threadNum)
 {
 	Log("初始化线程池。。。");
 	int errorCode = 0;
 	//初始化线程
-	SYSTEM_INFO sysInfo;
-	GetSystemInfo(&sysInfo);
-	DWORD m_threadCount = sysInfo.dwNumberOfProcessors + 2;
 	m_bRun = true;
-	for (DWORD i = 0; i < m_threadCount; ++i)
+	for (UINT i = 0; i < threadNum; ++i)
 	{
 		::_beginthreadex(NULL, 0, ThreadPoolWorkThread, this, 0, 0);
 	}
@@ -100,10 +97,12 @@ bool ThreadPool::AddElem(_ThreadElem* param)
 {
 	if (param->runCount == 0 && param->runCount != MAX_THREAD_RUNCOUNT) 
 	{
+		Log("ThreadPool param error!");
 		return false;
 	}
 	if (!HasSpace())
 	{
+		Log("ThreadPool has not enough space!");
 		return false;
 	}
 	AUTO_LOCKER(m_csLocker);

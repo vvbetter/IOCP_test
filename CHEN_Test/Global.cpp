@@ -12,6 +12,14 @@ bool CreateSocket(CreateSocketType type, UINT localIP, USHORT port, CreateSocket
 	{
 		s = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
 	}
+	else if (type &CST_TCP)
+	{
+		s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	}
+	else if (type & CST_UDP)
+	{
+		s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	}
 
 	if (s == INVALID_SOCKET)
 		return false;

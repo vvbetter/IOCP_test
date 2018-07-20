@@ -35,7 +35,7 @@ public:
 	static ThreadPool* instance;
 	static ThreadPool* Instance();
 public:
-	bool Init();
+	bool Init(UINT threadNum);
 	bool AddElem(_ThreadElem*);
 	bool HasSpace();
 	void ThreadFunc();

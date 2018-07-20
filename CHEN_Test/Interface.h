@@ -45,6 +45,8 @@ enum CreateSocketType
 {
 	CST_UDP_IOCP = 0x1,
 	CST_TCP_IOCP = 0x2,
+	CST_UDP = 0x4,
+	CST_TCP = 0x8,
 };
 
 extern bool CreateSocket(CreateSocketType type, UINT localIP, USHORT port, CreateSocketData &csd);
